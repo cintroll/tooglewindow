@@ -1,0 +1,17 @@
+#!/bin/bash
+set -x
+ps aux | grep -v tooglewindow | grep -v grep | grep -qi $1 > /dev/null
+if [ $? -eq '0' ]
+then
+  gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval "global.get_window_actors().map(a=>a.meta_window).find(w=>w.has_focus()).get_wm_class()" | cut -d'"' -f 2 | grep -qi $1 > /dev/null  
+  if [ $? -eq '0' ]
+  then
+   gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval "global.get_window_actors().map(w=>w.meta_window).find(mw=>mw.get_title().match(/$1/i)).minimize()" > /dev/null
+  else
+   gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval "global.get_window_actors().map(w=>w.meta_window).find(mw=>mw.get_title().match(/$1/i)).activate(0)" > /dev/null
+  fi
+else
+  $1&
+fi
+
+set +x
